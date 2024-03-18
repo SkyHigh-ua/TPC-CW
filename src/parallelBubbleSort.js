@@ -6,13 +6,9 @@ function createWorker(array, start, end) {
     const workerData = { array: array, start: start, end: end };
     const worker = new Worker(join(dirname(fileURLToPath(import.meta.url)), 'worker.js'), { workerData });
     return new Promise((resolve, reject) => {
-        worker.on('message', (message) => {
-            resolve(message);
-        });
+        worker.on('message', resolve);
 
-        worker.on('error', (error) => {
-            reject(error);
-        });
+        worker.on('error', reject);
 
         resolve(worker);
     });
@@ -22,8 +18,11 @@ export async function parallelBubbleSort(array) {
     const sharedArray = new Int32Array(new SharedArrayBuffer(array.length * Int32Array.BYTES_PER_ELEMENT));
     sharedArray.set(array);
     const workers = [];
-    for (let i = 0; i < array.length - 1; i++) {
-        const workerPromise = createWorker(sharedArray, i, i+1);
+    const step = Math.max(1, Math.floor(array.length / 10));
+
+    for (let i = 0; i < array.length - 1; i += step) {
+        const endIndex = Math.min(i + 2 * step - 1, array.length - 1);
+        const workerPromise = createWorker(sharedArray, i, endIndex);
         const worker = await workerPromise;
         workers.push(worker);
     }
@@ -37,5 +36,6 @@ export async function parallelBubbleSort(array) {
     }
     
     workers.forEach((worker) => { worker.terminate() });
+
     return Array.from(sharedArray);
 }
