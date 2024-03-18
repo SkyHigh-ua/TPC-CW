@@ -13,22 +13,29 @@ function createWorker(array, start, end) {
         worker.on('error', (error) => {
             reject(error);
         });
+
+        resolve(worker);
     });
 }
 
-export async function parallelBubbleSort(array) {       
+export async function parallelBubbleSort(array) {
     const sharedArray = new Int32Array(new SharedArrayBuffer(array.length * Int32Array.BYTES_PER_ELEMENT));
-    sharedArray.set(array);           
-    for (let i = 0; i < array.length - 1; i += 2) {
-        const workers = [];
-        for (let j = 0; j < array.length; j += 2) {
-            workers.push(createWorker(sharedArray, j - 1, j));
-        }
-        await Promise.all(workers);
-        for (let j = 1; j < array.length; j += 2) {
-            workers.push(createWorker(sharedArray, j - 1, j));
-        }
-        await Promise.all(workers);
+    sharedArray.set(array);
+    const workers = [];
+    for (let i = 0; i < array.length - 1; i++) {
+        const workerPromise = createWorker(sharedArray, i, i+1);
+        const worker = await workerPromise;
+        workers.push(worker);
     }
+    
+    for (let i = 0; i < array.length; i++) {
+        for (let j = 0; j < workers.length; j++) {
+            workers[j].postMessage('start');
+        }
+        const isSwapped = await Promise.all(workers.map(worker => new Promise(resolve => worker.once('message', resolve))));
+        if (!isSwapped.some((swap) => swap)) break;
+    }
+    
+    workers.forEach((worker) => { worker.terminate() });
     return Array.from(sharedArray);
 }
