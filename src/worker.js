@@ -1,8 +1,8 @@
 import { parentPort, workerData } from 'worker_threads';
 
-const { array, start, end } = workerData;
 
-parentPort.on('message', (message) => {
+parentPort.on('message', (task) => {
+    const { array, start, end } = task;
     let swapped = false;
     
     for (let i = start; i < end; i++) {
