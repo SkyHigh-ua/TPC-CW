@@ -1,6 +1,6 @@
-export function testSequential(array) {
+export function testSequential(array, comparator = (a, b) => a > b) {
     for (let i = 0; i < array.length-1; i++) {
-        if(array[i] > array[i+1]) return false;
+        if(comparator(array[i],array[i+1])) return false;
     }
     return true;
 }

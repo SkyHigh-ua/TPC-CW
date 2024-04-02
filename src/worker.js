@@ -1,12 +1,13 @@
-import { parentPort } from 'worker_threads';
+import { parentPort, workerData } from 'worker_threads';
 
+const comparator = eval(`(${workerData.comparator})`);
 
 parentPort.on('message', (task) => {
     const { array, start, end } = task;
     let swapped = false;
     
     for (let i = start; i < end; i++) {
-        if (array[i] > array[i + 1]) {
+        if (comparator(array[i], array[i + 1])) {
             [array[i], array[i + 1]] = [array[i + 1], array[i]];
             swapped = true;
         }

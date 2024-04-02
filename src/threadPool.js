@@ -1,14 +1,14 @@
 import { Worker } from 'worker_threads';
 
 export class ThreadPool {
-  constructor(size, path) {
+  constructor(size, path, comparator) {
     this.size = size;
     this.workers = [];
     this.tasks = [];
     this.shuttingDown = false;
 
     for (let i = 0; i < size; i++) {
-      this.workers.push(new Worker(path));
+      this.workers.push(new Worker(path, { workerData: { comparator } }));
     }
   }
 

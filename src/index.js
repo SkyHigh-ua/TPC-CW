@@ -35,3 +35,28 @@ console.log(`Parallel Bubble Sort measurements:`);
         }   
     }
 })();
+
+const floatArrays = sizes.map((size) => Array.from({length: size}, () => Math.random() * size));
+const seqFloatResults = [];
+const comparator = (a, b) => a < b;
+
+console.log(`Sequential Bubble Sort measurements (float):`);
+for (let i = 0; i < sizes.length; i++) {
+    const start = performance.now();
+    const res = bubbleSort([...floatArrays[i]], comparator);
+    const end = performance.now();
+    console.log(`Array size ${sizes[i]}: ${end - start} ms`);
+    console.log(`Is solution correct: ${testSequential(res, comparator)}`);
+    seqFloatResults.push(res);
+}
+
+console.log(`Parallel Bubble Sort measurements (float):`);
+(async () => {
+    for (let i = 0; i < sizes.length; i++) {
+        const start = performance.now();
+        const res = await parallelBubbleSort(floatArrays[i], 8, 4, comparator);
+        const end = performance.now();
+        console.log(`Array size ${sizes[i]}: ${end - start} ms`);
+        console.log(`Is solution correct: ${testParallel(res, seqFloatResults[i])}`);
+    }
+})();

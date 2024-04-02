@@ -24,7 +24,7 @@ const parTime = [];
         let end = performance.now();
         seqTime.push(end - start);
         start = performance.now();
-        await parallelBubbleSort(array, 4, 4);
+        await parallelBubbleSort(array, 8, 4);
         end = performance.now();
         parTime.push(end - start);
     }
